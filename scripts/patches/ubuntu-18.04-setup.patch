@@ -1,0 +1,41 @@
+diff --git a/conda-reqs/conda-lock-reqs/conda-requirements-riscv-tools-linux-64.conda-lock.yml b/conda-reqs/conda-lock-reqs/conda-requirements-riscv-tools-linux-64.conda-lock.yml
+index 50df079e..c9336cd1 100644
+--- a/conda-reqs/conda-lock-reqs/conda-requirements-riscv-tools-linux-64.conda-lock.yml
++++ b/conda-reqs/conda-lock-reqs/conda-requirements-riscv-tools-linux-64.conda-lock.yml
+@@ -6016,17 +6016,6 @@ package:
+     sha256: 051ed49c3dcae8913ea7cd08e46a606dba30b79993209636c4875bc1d637bc24
+   category: main
+   optional: false
+-- name: bcrypt
+-  version: 3.2.2
+-  manager: pip
+-  platform: linux-64
+-  dependencies:
+-    cffi: '>=1.1'
+-  url: https://files.pythonhosted.org/packages/86/1b/f4d7425dfc6cd0e405b48ee484df6d80fb39e05f25963dbfcc2c511e8341/bcrypt-3.2.2-cp36-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_24_x86_64.whl
+-  hash:
+-    sha256: 6d2cb9d969bfca5bc08e45864137276e4c3d3d7de2b162171def3d188bf9d34a
+-  category: main
+-  optional: false
+ - name: fab-classic
+   version: 1.19.2
+   manager: pip
+diff --git a/scripts/build-toolchain-extra.sh b/scripts/build-toolchain-extra.sh
+index 24b024bc..f28b72a0 100755
+--- a/scripts/build-toolchain-extra.sh
++++ b/scripts/build-toolchain-extra.sh
+@@ -73,7 +73,7 @@ SRCDIR="$(pwd)/toolchains/${TOOLCHAIN}"
+ echo '==>  Installing Spike'
+ # disable boost explicitly for https://github.com/riscv-software-src/riscv-isa-sim/issues/834
+ # since we don't have it in our requirements
+-module_all riscv-isa-sim --prefix="${RISCV}" --with-boost=no --with-boost-asio=no --with-boost-regex=no
++module_all riscv-isa-sim --prefix="${RISCV}" --with-boost=no --with-boost-asio=no --with-boost-regex=no --host  x86_64-pc-linux-gnu
+ # build static libfesvr library for linking into firesim driver (or others)
+ echo '==>  Installing libfesvr static library'
+ OLDCLEANAFTERINSTALL=$CLEANAFTERINSTALL
+diff --git a/toolchains/riscv-tools/riscv-isa-sim b/toolchains/riscv-tools/riscv-isa-sim
+--- a/toolchains/riscv-tools/riscv-isa-sim
++++ b/toolchains/riscv-tools/riscv-isa-sim
+@@ -1 +1 @@
+-Subproject commit d182829e68f1393f223c1233cf22d7adcc89042d
++Subproject commit d182829e68f1393f223c1233cf22d7adcc89042d-dirty

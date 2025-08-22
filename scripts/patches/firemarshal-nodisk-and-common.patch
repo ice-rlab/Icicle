@@ -1,0 +1,54 @@
+diff --git a/boards/default/installers/firesim/firesim.py b/boards/default/installers/firesim/firesim.py
+index 68786d3..da798ec 100644
+--- a/boards/default/installers/firesim/firesim.py
++++ b/boards/default/installers/firesim/firesim.py
+@@ -29,9 +29,6 @@ def install(targetCfg, opts):
+     if not fsWork.exists():
+         raise wlutil.ConfigurationError("Configured firesim-dir (" + str(fsDir) + ") does not appear to be a valid firesim installation")
+ 
+-    if targetCfg['nodisk']:
+-        raise NotImplementedError("nodisk builds not currently supported by the install command")
+-
+     fsTargetDir = fsWork / targetCfg['name']
+     if not fsTargetDir.exists():
+         fsTargetDir.mkdir()
+@@ -43,7 +40,7 @@ def install(targetCfg, opts):
+     # Firesim config
+     fsCfg = {
+             "benchmark_name": targetCfg['name'],
+-            "common_simulation_outputs": ["uartlog"]
++            "common_simulation_outputs": ["uartlog", "TRACEFILE-C*", "*.vcd"]
+             }
+ 
+     if 'post_run_hook' in targetCfg:
+@@ -55,8 +52,14 @@ def install(targetCfg, opts):
+         for slot, jCfg in enumerate(targetCfg['jobs'].values()):
+             wls[slot] = {
+                     'name': jCfg['name'],
+-                    'bootbinary': fullRel(fsTargetDir, jCfg['bin'])
+                     }
++            jbin_path = str(jCfg['bin'])
++            if targetCfg['nodisk']:
++                jbase, jext = os.path.splitext(jbin_path)
++                if jbase.endswith('-bin'):
++                    jbase = jbase[:-4] + '-bin-nodisk'
++                jbin_path = jbase + jext
++            wls[slot]['bootbinary'] = fullRel(fsTargetDir, jbin_path)
+             if 'img' in jCfg:
+                 wls[slot]["rootfs"] = fullRel(fsTargetDir, jCfg['img'])
+             else:
+@@ -74,7 +77,13 @@ def install(targetCfg, opts):
+         fsCfg['workloads'] = wls
+     else:
+         # Single-node run
+-        fsCfg["common_bootbinary"] = fullRel(fsTargetDir, targetCfg['bin'])
++        bin_path = str(targetCfg['bin'])
++        if targetCfg['nodisk']:
++            base, ext = os.path.splitext(bin_path)
++            if base.endswith('-bin'):
++                base = base[:-4] + '-bin-nodisk'
++            bin_path = base + ext
++        fsCfg["common_bootbinary"] = fullRel(fsTargetDir, bin_path)
+ 
+         if 'img' in targetCfg:
+             fsCfg["common_rootfs"] = fullRel(fsTargetDir, targetCfg['img'])

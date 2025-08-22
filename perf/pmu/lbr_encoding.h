@@ -1,0 +1,144 @@
+#ifndef LBR_ENCODING_H_
+#define LBR_ENCODING_H_
+
+#include <riscv-pk/encoding.h>
+
+// #define DECLARE_CSR(name, number) case number: return #name;
+
+
+#define CSR_LBTO0     0xcc0
+#define CSR_LBFROM0   0xcc1
+#define CSR_LBTO1     0xcc2
+#define CSR_LBFROM1   0xcc3
+#define CSR_LBTO2     0xcc4
+#define CSR_LBFROM2   0xcc5
+#define CSR_LBTO3     0xcc6
+#define CSR_LBFROM3   0xcc7
+#define CSR_LBTO4     0xcc8
+#define CSR_LBFROM4   0xcc9
+#define CSR_LBTO5     0xcca
+#define CSR_LBFROM5   0xccb
+#define CSR_LBTO6     0xccc
+#define CSR_LBFROM6   0xccd
+#define CSR_LBTO7     0xcce
+#define CSR_LBFROM7   0xccf
+#define CSR_LBTO8     0xcd0
+#define CSR_LBFROM8   0xcd1
+#define CSR_LBTO9     0xcd2
+#define CSR_LBFROM9   0xcd3
+#define CSR_LBTO10    0xcd4
+#define CSR_LBFROM10  0xcd5
+#define CSR_LBTO11    0xcd6
+#define CSR_LBFROM11  0xcd7
+#define CSR_LBTO12    0xcd8
+#define CSR_LBFROM12  0xcd9
+#define CSR_LBTO13    0xcda
+#define CSR_LBFROM13  0xcdb
+#define CSR_LBTO14    0xcdc
+#define CSR_LBFROM14  0xcdd
+#define CSR_LBTO15    0xcde
+#define CSR_LBFROM15  0xcdf
+#define CSR_LBTO16    0xce0
+#define CSR_LBFROM16  0xce1
+#define CSR_LBTO17    0xce2
+#define CSR_LBFROM17  0xce3
+#define CSR_LBTO18    0xce4
+#define CSR_LBFROM18  0xce5
+#define CSR_LBTO19    0xce6
+#define CSR_LBFROM19  0xce7
+#define CSR_LBTO20    0xce8
+#define CSR_LBFROM20  0xce9
+#define CSR_LBTO21    0xcea
+#define CSR_LBFROM21  0xceb
+#define CSR_LBTO22    0xcec
+#define CSR_LBFROM22  0xced
+#define CSR_LBTO23    0xcee
+#define CSR_LBFROM23  0xcef
+#define CSR_LBTO24    0xcf0
+#define CSR_LBFROM24  0xcf1
+#define CSR_LBTO25    0xcf2
+#define CSR_LBFROM25  0xcf3
+#define CSR_LBTO26    0xcf4
+#define CSR_LBFROM26  0xcf5
+#define CSR_LBTO27    0xcf6
+#define CSR_LBFROM27  0xcf7
+#define CSR_LBTO28    0xcf8
+#define CSR_LBFROM28  0xcf9
+#define CSR_LBTO29    0xcfa
+#define CSR_LBFROM29  0xcfb
+#define CSR_LBTO30    0xcfc
+#define CSR_LBFROM30  0xcfd
+#define CSR_LBTO31    0xcfe
+#define CSR_LBFROM31  0xcff
+
+#ifdef DECLARE_CSR
+DECLARE_CSR(lbto0, CSR_LBTO0)
+DECLARE_CSR(lbfrom0, CSR_LBFROM0)
+DECLARE_CSR(lbto1, CSR_LBTO1)
+DECLARE_CSR(lbfrom1, CSR_LBFROM1)
+DECLARE_CSR(lbto2, CSR_LBTO2)
+DECLARE_CSR(lbfrom2, CSR_LBFROM2)
+DECLARE_CSR(lbto3, CSR_LBTO3)
+DECLARE_CSR(lbfrom3, CSR_LBFROM3)
+DECLARE_CSR(lbto4, CSR_LBTO4)
+DECLARE_CSR(lbfrom4, CSR_LBFROM4)
+DECLARE_CSR(lbto5, CSR_LBTO5)
+DECLARE_CSR(lbfrom5, CSR_LBFROM5)
+DECLARE_CSR(lbto6, CSR_LBTO6)
+DECLARE_CSR(lbfrom6, CSR_LBFROM6)
+DECLARE_CSR(lbto7, CSR_LBTO7)
+DECLARE_CSR(lbfrom7, CSR_LBFROM7)
+DECLARE_CSR(lbto8, CSR_LBTO8)
+DECLARE_CSR(lbfrom8, CSR_LBFROM8)
+DECLARE_CSR(lbto9, CSR_LBTO9)
+DECLARE_CSR(lbfrom9, CSR_LBFROM9)
+DECLARE_CSR(lbto10, CSR_LBTO10)
+DECLARE_CSR(lbfrom10, CSR_LBFROM10)
+DECLARE_CSR(lbto11, CSR_LBTO11)
+DECLARE_CSR(lbfrom11, CSR_LBFROM11)
+DECLARE_CSR(lbto12, CSR_LBTO12)
+DECLARE_CSR(lbfrom12, CSR_LBFROM12)
+DECLARE_CSR(lbto13, CSR_LBTO13)
+DECLARE_CSR(lbfrom13, CSR_LBFROM13)
+DECLARE_CSR(lbto14, CSR_LBTO14)
+DECLARE_CSR(lbfrom14, CSR_LBFROM14)
+DECLARE_CSR(lbto15, CSR_LBTO15)
+DECLARE_CSR(lbfrom15, CSR_LBFROM15)
+DECLARE_CSR(lbto16, CSR_LBTO16)
+DECLARE_CSR(lbfrom16, CSR_LBFROM16)
+DECLARE_CSR(lbto17, CSR_LBTO17)
+DECLARE_CSR(lbfrom17, CSR_LBFROM17)
+DECLARE_CSR(lbto18, CSR_LBTO18)
+DECLARE_CSR(lbfrom18, CSR_LBFROM18)
+DECLARE_CSR(lbto19, CSR_LBTO19)
+DECLARE_CSR(lbfrom19, CSR_LBFROM19)
+DECLARE_CSR(lbto20, CSR_LBTO20)
+DECLARE_CSR(lbfrom20, CSR_LBFROM20)
+DECLARE_CSR(lbto21, CSR_LBTO21)
+DECLARE_CSR(lbfrom21, CSR_LBFROM21)
+DECLARE_CSR(lbto22, CSR_LBTO22)
+DECLARE_CSR(lbfrom22, CSR_LBFROM22)
+DECLARE_CSR(lbto23, CSR_LBTO23)
+DECLARE_CSR(lbfrom23, CSR_LBFROM23)
+DECLARE_CSR(lbto24, CSR_LBTO24)
+DECLARE_CSR(lbfrom24, CSR_LBFROM24)
+DECLARE_CSR(lbto25, CSR_LBTO25)
+DECLARE_CSR(lbfrom25, CSR_LBFROM25)
+DECLARE_CSR(lbto26, CSR_LBTO26)
+DECLARE_CSR(lbfrom26, CSR_LBFROM26)
+DECLARE_CSR(lbto27, CSR_LBTO27)
+DECLARE_CSR(lbfrom27, CSR_LBFROM27)
+DECLARE_CSR(lbto28, CSR_LBTO28)
+DECLARE_CSR(lbfrom28, CSR_LBFROM28)
+DECLARE_CSR(lbto29, CSR_LBTO29)
+DECLARE_CSR(lbfrom29, CSR_LBFROM29)
+DECLARE_CSR(lbto30, CSR_LBTO30)
+DECLARE_CSR(lbfrom30, CSR_LBFROM30)
+DECLARE_CSR(lbto31, CSR_LBTO31)
+DECLARE_CSR(lbfrom31, CSR_LBFROM31)
+// #else 
+// #error ("LBR_ENCODING_H_ must be included with DECLARE_CSR defined to actually declare the CSRs. Otherwise, just include it normally to get the defines.")
+#endif
+
+#undef DECLARE_CSR
+#endif

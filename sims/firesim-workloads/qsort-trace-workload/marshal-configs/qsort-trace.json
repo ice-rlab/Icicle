@@ -1,0 +1,8 @@
+{
+  "name" : "qsort-trace",
+  "base" : "bare-base.json",
+  "workdir" : "..",
+  "host-init" : "build.sh",
+  "bin": "qsort",
+  "post_run_hook": "gen-trace.sh"
+}

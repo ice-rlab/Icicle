@@ -1,0 +1,8 @@
+{
+  "name" : "mergesort-trace",
+  "base" : "bare-base.json",
+  "workdir" : "..",
+  "host-init" : "build.sh",
+  "bin": "mergesort",
+  "post_run_hook": "gen-trace.sh"
+}

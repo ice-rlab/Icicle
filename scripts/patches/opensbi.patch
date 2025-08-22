@@ -1,0 +1,23 @@
+diff --git a/Makefile b/Makefile
+index cebb78e..cc7019d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -150,7 +150,7 @@ ifndef PLATFORM_RISCV_ABI
+   endif
+ endif
+ ifndef PLATFORM_RISCV_ISA
+-  PLATFORM_RISCV_ISA = rv$(PLATFORM_RISCV_XLEN)imafdc
++  PLATFORM_RISCV_ISA = rv$(PLATFORM_RISCV_XLEN)imafdch_zicsr_zifencei
+ endif
+ ifndef PLATFORM_RISCV_CODE_MODEL
+   PLATFORM_RISCV_CODE_MODEL = medany
+diff --git a/platform/generic/config.mk b/platform/generic/config.mk
+index 8d63ece..3c978e4 100644
+--- a/platform/generic/config.mk
++++ b/platform/generic/config.mk
+@@ -38,3 +38,5 @@ else
+   FW_PAYLOAD_OFFSET=0x200000
+ endif
+ FW_PAYLOAD_FDT_ADDR=$(FW_JUMP_FDT_ADDR)
++
++PLATFORM_RISCV_ISA = rv$(PLATFORM_RISCV_XLEN)imafdch_zicsr_zifencei

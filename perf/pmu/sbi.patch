@@ -1,0 +1,21 @@
+diff --git a/lib/sbi/sbi_init.c b/lib/sbi/sbi_init.c
+index bc60a427..c2ea8fb5 100644
+--- a/lib/sbi/sbi_init.c
++++ b/lib/sbi/sbi_init.c
+@@ -26,6 +26,7 @@
+ #include <sbi/sbi_timer.h>
+ #include <sbi/sbi_tlb.h>
+ #include <sbi/sbi_version.h>
++#include  <sbi/sbi_hpm.h>
+ 
+ #define BANNER                                              \
+ 	"   ____                    _____ ____ _____\n"     \
+@@ -163,6 +164,8 @@ static void sbi_boot_print_hart(struct sbi_scratch *scratch, u32 hartid)
+ 	sbi_printf("Boot HART MHPM Count      : %d\n",
+ 		   sbi_hart_mhpm_count(scratch));
+ 	sbi_hart_delegation_dump(scratch, "Boot HART ", "         ");
++
++	__sbi_config_hpm_events();
+ }
+ 
+ static spinlock_t coldboot_lock = SPIN_LOCK_INITIALIZER;

@@ -1,0 +1,9 @@
+{
+    "name" : "mt-matmul-bare",
+    "base" : "bare-base.json",
+    "workdir" : "..",
+    "host-init" : "build.sh",
+    "bin": "mt-matmul.riscv",
+    "post_run_hook": "post_run.sh"
+  }
+  

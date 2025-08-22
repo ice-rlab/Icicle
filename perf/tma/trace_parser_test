@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+import argparse
+from pathlib import Path
+from tma import TraceParser
+from trace_defs import ROCKET_TRACE, BOOM_TRACE
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Decode a binary trace file into a pandas DataFrame"
+    )
+    parser.add_argument(
+        "trace_file",
+        type=Path,
+        help="Path to the raw binary trace file"
+    )
+    parser.add_argument(
+        "--hw",
+        choices=["rocket", "boom"],
+        required=True,
+        help="Hardware type: selects the appropriate trace field definition"
+    )
+    args = parser.parse_args()
+    trace_dict = ROCKET_TRACE if args.hw == "rocket" else BOOM_TRACE
+    tp = TraceParser(args.trace_file, trace_dict)
+    print(tp.trace)
+    print(tp.counters)
+    
+if __name__ == "__main__":
+    main()

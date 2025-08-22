@@ -1,0 +1,10 @@
+{
+  "name" : "hello",
+  "base" : "br-base.json",
+  "workdir" : "..",
+  "host-init" : "build.sh",
+  "overlay" : "overlay",
+  "files": [["run.sh", "/"]],
+  "outputs" : ["/output", "/cpi/"],
+  "command": "bash run.sh"
+}

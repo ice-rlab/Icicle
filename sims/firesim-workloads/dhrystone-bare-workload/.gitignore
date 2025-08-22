@@ -1,0 +1,4 @@
+overlay/
+*.o
+dhrystone.riscv
+dhrystone.riscv.dump

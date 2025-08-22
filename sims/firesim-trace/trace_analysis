@@ -1,0 +1,223 @@
+#!/usr/bin/env python
+
+import argparse
+from trace_defs import *
+import operator
+import ast
+
+
+def parse_metrics(metrics_list):
+    """Parses metric expressions like frontend=!ibuf_valid&&ibuf_ready"""
+    metrics = []
+    if not metrics_list:
+        return metrics
+    for expr in metrics_list:
+        if '=' not in expr:
+            continue
+        name, formula = expr.split('=', 1)
+        metrics.append((name, formula))
+    return metrics
+
+def evaluate_formula(formula, row):
+    local_env = {k: v != '0' * len(v) for k, v in row.items()}
+    formula_py = (
+        formula.replace('&&', ' and ')
+               .replace('||', ' or ')
+               .replace('!', ' not ')
+    )
+    try:
+        return int(eval(formula_py, {}, local_env))
+    except Exception as e:
+        print(f"⚠️ Failed to evaluate formula '{formula}': {e}")
+        return 0
+    
+def check_and_print_csv_header(trace_dict, filter_fields=None, exclude_fields=None, show_line_number=False, metrics=None, order=None):
+    total_bits = sum(trace_dict.values())
+    if total_bits != 128:
+        print(f"⚠️ Total bits = {total_bits}, which does NOT equal 128!")
+
+    all_fields = list(trace_dict.keys())
+    if metrics:
+        all_fields.extend(name for name, _ in metrics)
+
+    if filter_fields:
+        all_fields = [f for f in all_fields if f in filter_fields or any(f == m[0] for m in metrics or [])]
+
+    if exclude_fields:
+        all_fields = [f for f in all_fields if f not in exclude_fields]
+
+
+    output_order = order if order else all_fields
+
+    headers = []
+    if show_line_number:
+        headers.append("line")
+    headers.extend(output_order)
+    print(",".join(headers))
+
+
+def dump_bin(file_path, n, start):
+    with open(file_path, 'rb') as f:    
+        i = 0
+        while True:
+            if i < start:
+                continue
+            if n and i >= start + n:
+                break
+            value = f.read(16)
+            
+            value = f.read(16)
+            value_int = int.from_bytes(value, "big")
+            bit_str = format(value_int, "0128b")
+            byte_chunks = [ bit_str[i:i+8] for i in range(0, 128, 8) ]
+            print(" ".join(byte_chunks))
+            i += 1
+
+def dump(file_path, n, start):
+    with open(file_path, 'rb') as f:    
+        i = 0
+        while True:
+            if i < start:
+                continue
+            if n and i >= start + n:
+                break
+            value = f.read(16)
+            print(value.hex())
+            i = i + 1
+
+
+def parse_where_conditions(conditions_list):
+    """Converts ['field=val', ...] to {'field': 'val', ...}"""
+    conditions = {}
+    if not conditions_list:
+        return conditions
+    for cond in conditions_list:
+        if '=' not in cond:
+            continue
+        key, val = cond.split('=', 1)
+        conditions[key] = val
+    return conditions
+
+def parse_trace_line(file_path, trace_dict, n=None, start=0, filter_fields=None, exclude_fields=None, where_conditions=None, show_line_number=False, metrics=None, order=None):
+    check_and_print_csv_header(trace_dict, filter_fields, exclude_fields, show_line_number, metrics, order)
+
+    with open(file_path, 'rb') as f:
+        i = 0
+        while True:
+            if n is not None and i >= start + n:
+                break
+            value = f.read(16)
+            if len(value) < 16:
+                break
+            if i >= start:
+                bits = bin(int.from_bytes(value[::-1], byteorder='little'))[2:].zfill(128)
+
+                # Parse trace bits into fields
+                bit_index = 0
+                row = {}
+                for field, width in trace_dict.items():
+                    segment = bits[bit_index:bit_index + width]
+                    bit_index += width
+                    row[field] = segment
+
+                # Filter based on where conditions
+                if where_conditions:
+                    if any(
+                        row.get(field) != expected.zfill(len(row.get(field, "")))
+                        for field, expected in where_conditions.items()
+                    ):
+                        i += 1
+                        continue
+
+                # Compute metrics
+                metric_values = {}
+                if metrics:
+                    for name, formula in metrics:
+                        metric_values[name] = str(evaluate_formula(formula, row))
+
+                # Build output row in user-specified order
+                output = []
+                if show_line_number:
+                    output.append(str(i))
+                final_order = order if order else list(trace_dict.keys()) + ([name for name, _ in metrics] if metrics else [])
+                if exclude_fields:
+                    final_order = [key for key in final_order if key not in exclude_fields]
+                for key in final_order:
+                    if key in row:
+                        output.append(row[key])
+                    elif key in metric_values:
+                        output.append(metric_values[key])
+                    else:
+                        output.append("")  # empty if missing
+                print(",".join(output))
+            i += 1
+
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Multithreaded 192-byte file reader.")
+    parser.add_argument("file", help="Path to the file to read.")
+    parser.add_argument("-n", type=int, default=None, help="Maximum number of lines (192-byte chunks) to read.")
+    parser.add_argument("-start", type=int, default=0, help="Cycle to start parsing from")
+    parser.add_argument("-dump", action="store_true", help="Dump raw trace values")
+    parser.add_argument("-dump-bin", action="store_true", help="Dump raw trace values in binary format")
+    parser.add_argument("-rocket", action="store_true", help="Dump trace values for ROCKET_TRACE")
+    parser.add_argument("-boom", action="store_true", help="Dump trace values for BOOM_TRACE")
+    parser.add_argument("-filter", nargs='+', help="List of field names to include in output")
+    parser.add_argument(
+        "-where", nargs='+', help="List of conditions like field=val (e.g., ibuf_ready=1)")
+    parser.add_argument("-ln", action="store_true", help="Prepend line number (in hex) to each output row")
+    parser.add_argument("-metric", nargs='+', help="Add new columns like name=expression (e.g., frontend=!ibuf_valid&&ibuf_ready)")
+    parser.add_argument(
+        "-order", nargs='+',
+        help="Specify exact order of fields/metrics in output (e.g., -order ibuf_valid ibuf_ready frontend)"
+    )
+    parser.add_argument("-exclude", nargs='+', help="List of field names to exclude from output")
+
+
+
+    args = parser.parse_args()
+    where_conditions = parse_where_conditions(args.where) if args.where else None
+    metrics = parse_metrics(args.metric) if args.metric else None
+    order = args.order if args.order else None
+    exclude_fields = args.exclude if args.exclude else None
+
+
+    
+    if(args.dump):
+         dump(args.file, args.n, args.start)
+    elif(args.dump_bin):
+         dump_bin(args.file, args.n, args.start)
+    elif(args.rocket):
+        parse_trace_line(
+            args.file,
+            ROCKET_TRACE,
+            args.n,
+            args.start,
+            args.filter,
+            exclude_fields,
+            where_conditions,
+            args.ln,
+            metrics,
+            order
+        )
+    elif(args.boom):
+        parse_trace_line(
+            args.file,
+            BOOM_TRACE,
+            args.n,
+            args.start,
+            args.filter,
+            exclude_fields,
+            where_conditions,
+            args.ln,
+            metrics,
+            order
+        )
+    else:
+        print("Please specify either -dump, -dump-bin, -rocket or -boom option.")
+         
+   
+
+if __name__ == "__main__":
+   main()

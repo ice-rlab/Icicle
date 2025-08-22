@@ -1,0 +1,37 @@
+[submodule "benchmarking/libgloss-htif"]
+	path = benchmarking/libgloss-htif
+	url = git@github.com:ucb-bar/libgloss-htif.git
+[submodule "sims/firesim-bitstream"]
+	path = sims/firesim-bitstream
+	url = git@github.com:ice-rlab/firesim-bitstream.git
+[submodule "benchmarking/coremark"]
+	path = benchmarking/coremark
+	url = git@github.com:ice-rlab/coremark.git
+	branch = perf_char
+[submodule "benchmarking/microbenchmarks/riscv-tests"]
+	path = benchmarking/microbenchmarks/riscv-tests
+	url = git@github.com:ice-rlab/riscv-tests.git
+	branch = perf_char
+[submodule "sims/firesim-workloads/spec2017-workload"]
+	path = sims/firesim-workloads/spec2017-workload
+	url = git@github.com:ice-rlab/spec2017-workload.git
+[submodule "sims/firesim-workloads/coremark-workload"]
+	path = sims/firesim-workloads/coremark-workload
+	url = git@github.com:ice-rlab/coremark-workload.git
+[submodule "sims/firesim-drivers/dma_ip_drivers_xvsec"]
+	path = sims/firesim-drivers/dma_ip_drivers_xvsec
+	url = https://github.com/paulmnt/dma_ip_drivers
+[submodule "sims/firesim-drivers/dma_ip_drivers"]
+	path = sims/firesim-drivers/dma_ip_drivers
+	url = https://github.com/Xilinx/dma_ip_drivers
+[submodule "sims/firesim-workloads/coremark-casestudy-workload/coremark"]
+	path = sims/firesim-workloads/coremark-casestudy-workload/coremark
+	url = git@github.com:ice-rlab/coremark.git
+	branch = coremark_casestudy
+[submodule "sims/firesim-workloads/nvdla-workload"]
+	path = sims/firesim-workloads/nvdla-workload
+	url = git@github.com:ice-rlab/nvdla-workload.git
+[submodule "platforms/chipyard"]
+	path = platforms/chipyard
+	url = git@github.com:ice-rlab/chipyard.git
+	branch = iiswc2025

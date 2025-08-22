@@ -1,0 +1,9 @@
+place.design.name
+place.design.area
+place.design.density
+place.design.instances
+place.power
+place.route.wirelength
+place.csr_wirelength
+place.max_csr_wirelength
+place.longest_csr_path

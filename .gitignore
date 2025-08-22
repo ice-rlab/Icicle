@@ -1,0 +1,9 @@
+__pycache__
+._*
+out
+.metals
+.scala-build/
+.vscode
+.scalafmt.conf
+__pycache__
+setup

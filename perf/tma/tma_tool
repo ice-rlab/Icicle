@@ -1,0 +1,560 @@
+#!/usr/bin/env python
+import os
+import argparse
+import re
+import subprocess
+from typing import List, Dict, Union, Optional
+from pathlib import Path
+from dataclasses import dataclass, field
+import pprint
+from models import *
+from collections import defaultdict
+
+
+from tma import PMUCounterParser, TraceParser, TopDownMicroArchitecturalAnalysis
+from models import BOOM_TRACE_COLUMNS, BOOM_TRACE_TMA, get_filter
+
+from trace_defs import ROCKET_TRACE, BOOM_TRACE
+from tma_plot import create_tma_plot
+from count_plot import create_count_plot
+from trace_plot import create_binary_heatmap
+
+DEBUG : bool = False
+
+PC_DIR = os.environ.get("PC_DIR")
+OUT_DIR = f"{PC_DIR}/perf/tma/out/"
+pp = pprint.PrettyPrinter(indent=2, width=60, sort_dicts=True)
+
+
+@dataclass
+class Result:
+    name: str
+    file_path: Path
+    trace_file_path: Path
+
+    def __post_init__(self) -> None:
+        if not self.file_path.exists():
+            raise FileNotFoundError(f"Result file does not exist: {self.file_path}")
+
+@dataclass
+class Experiment:
+    name: str
+    hw_config: Path
+    results: List[Result] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        if not self.hw_config.exists():
+            raise FileNotFoundError(f"Hardware config file does not exist: {self.hw_config}")
+
+    def add_result(self, result: Result) -> None:
+        self.results.append(result)
+
+    def __str__(self) -> str:
+        return (
+            f"Experiment: {self.name}\n"
+            f"  Hardware Config: {self.hw_config}\n"
+            f"  Results:\n" +
+            "\n".join(f"    - {r.name}: {r.file_path}" for r in self.results)
+        )
+
+def sanitize_benchmark_name(name: str) -> str:
+    if name.endswith('.riscv'):
+        name = name[:-6]
+    if name.endswith('--copies1'):
+        name = name[:-9]
+    if name.startswith('intrate.sh'):
+        name = name[10:]
+    return name
+
+def find_all_hw_cfg_summaries(start_dir: Union[str, Path]) -> List[str]:
+    matches = []
+    for root, dirs, files in os.walk(str(start_dir)):
+        if 'HW_CFG_SUMMARY' in files:
+            matches.append(os.path.join(root, 'HW_CFG_SUMMARY'))
+    return matches
+
+def parse_hw_cfg_summary(path: str) -> Dict[str, Union[str, None]]:
+    cfg = {}
+    with open(path, 'r') as f:
+        for line in f:
+            if ':' in line:
+                key, val = line.strip().split(':', 1)
+                cfg[key.strip()] = val.strip() if val.strip() != "None" else None
+    return cfg
+
+def translate_hw(hw_cfg: Dict[str, str]) -> str:
+    if "boom" in hw_cfg.get("RuntimeHWConfig", "").lower():
+        return "Boom"
+    if "rocket" in hw_cfg.get("RuntimeHWConfig", "").lower():
+        return "Rocket"
+    return "Unknown HW Config: " + str(hw_cfg.get("RuntimeHWConfig", ""))
+
+def get_experiments(path: Path, hw_filter : str = "") -> List[Experiment]:
+    experiments: List[Experiment] = []
+
+    for hw_cfg_file in find_all_hw_cfg_summaries(path):
+        hw_cfg = parse_hw_cfg_summary(hw_cfg_file)
+        name = translate_hw(hw_cfg)
+
+        hw_cfg_path = Path(hw_cfg_file)
+        base = hw_cfg_path.parent
+        exp = Experiment(name=name, hw_config=hw_cfg_path)
+
+        trace_file_final = ""
+        for trace_file in base.glob("TRACE*.decoded"):
+            trace_file_final = trace_file
+            
+        for cpi_file in base.glob("cpi/*.cpi"):
+            result_name = f"{cpi_file.stem}"
+            exp.results.append(Result(name=result_name, file_path=cpi_file, trace_file_path=trace_file_final))
+        if hw_filter: 
+            if exp.name.lower() == hw_filter:
+                experiments.append(exp)
+        else:
+            experiments.append(exp)
+    
+    return experiments
+
+def show_exp(path: Path) -> None:
+    experiments = get_experiments(path)
+    for exp in experiments:
+        print(exp)
+
+def show_counters(path: Path) -> None:
+    experiments = get_experiments(path)
+    for exp in experiments:
+        print(exp)
+        for result in exp.results:
+            command = f"cat {result.file_path}"
+            out = subprocess.run(command, shell=True, capture_output=True, text=True)
+            print(out.stdout)
+
+def show_tma(path: Path) -> None:
+    experiments = get_experiments(path)
+    for exp in experiments:
+        print(exp)
+        for result in exp.results:
+            counts = PMUCounterParser(result.file_path)
+            if DEBUG:
+                print(f"================PMU Counters for {result.name}================")
+                pp.pprint(counts.counters)
+            if "rocket" in exp.name.lower():
+                tma = ROCKET_TMA
+            elif "boom" in exp.name.lower():
+                tma = BOOM_TMA
+            else:
+                print(f"Unknown hardware configuration for {exp.name}")
+                continue
+            if DEBUG:
+                print("================Formulas================")
+                print(tma)
+            tma.apply(counters=counts)
+            if DEBUG:
+                print("================Resolved formulas================")
+                print(tma.to_yaml_string(counters=counts))
+            tma.print_cycle()
+            tma.print_ipc()
+            tma.print_values()
+            
+def plot_trace(path: Path, out : str = "binary_heatmap", n : int = 100, start : int = 0, filters_name = "", dump : bool = False) -> None:
+    if filters_name == "":
+        filters = []
+        filters_name = "all"
+    else:
+        filters = get_filter(filters_name)
+    experiments = get_experiments(path)
+    for exp in experiments:
+        for result in exp.results:
+            try:
+                if "rocket" in exp.name.lower():
+                    tma = ROCKET_TMA
+                    parser = TraceParser(result.trace_file_path, ROCKET_TRACE, ROCKET_TRACE_COLUMNS, n)
+                elif "boom" in exp.name.lower():
+                    tma = BOOM_TRACE_TMA
+                    if DEBUG:
+                        print(f"Using BOOM trace parser for {result.name}")
+                    parser = TraceParser(result.trace_file_path, BOOM_TRACE, BOOM_TRACE_COLUMNS, n)
+                else:
+                    print(f"Unknown hardware configuration for {exp.name}")
+                    continue
+                if(result.trace_file_path == ""):
+                    raise FileNotFoundError(f"Trace file does not exist: {result.trace_file_path}")
+                if DEBUG:
+                    print(parser.trace)
+                    pp.pprint(parser.counters)
+                try:
+                    tma.apply(counters=parser)
+                except Exception as e:
+                    print(f"Error applying TMA to {result.name}: {e}")
+                    
+                if DEBUG:
+                    print("================Resolved formulas================")
+                    print(tma.to_yaml_string(counters=parser))
+                tma.print_values()
+                df = parser.trace[start:start+n]
+                if len(filters) > 0:
+                    df = df[filters]
+                if dump:
+                    print(f"Dumping trace for {result.name} to {OUT_DIR}/{out}_{result.name}_{start}-{start+n}_{filters_name}.csv")
+                    df.to_csv(f"{OUT_DIR}/{out}_{result.name}_{start}-{start+n}_{filters_name}.csv", index=False)
+                else:
+                    print(f"Creating heatmap for {result.name} with filters {filters_name} to {OUT_DIR}/{out}_{result.name}_{start}-{start+n}_{filters_name}")
+
+                    create_binary_heatmap(df, out_name = f"{OUT_DIR}/{out}_{result.name}_{start}-{start+n}_{filters_name}")
+            except FileNotFoundError as e:
+                print(f"Error processing {result.name}: {e}")
+            except Exception as e:
+                print(f"Unexpected error processing {result.name}: {e}")
+            else:
+                print(f"Successfully processed {result.name} with filters {filters_name}.")
+            
+def show_tma_trace(path: Path):
+    experiments = get_experiments(path)
+    for exp in experiments:
+        print(exp)
+        for result in exp.results:
+            if "rocket" in exp.name.lower():
+                tma = ROCKET_TMA
+                parser = TraceParser(result.trace_file_path, ROCKET_TRACE, ROCKET_TRACE_COLUMNS, n)
+            elif "boom" in exp.name.lower():
+                tma = BOOM_TRACE_TMA
+                parser = TraceParser(result.trace_file_path, BOOM_TRACE, BOOM_TRACE_COLUMNS, n)
+            else:
+                print(f"Unknown hardware configuration for {exp.name}")
+                continue
+            if(result.trace_file_path == ""):
+                raise FileNotFoundError(f"Trace file does not exist: {result.trace_file_path}")
+            if DEBUG:
+                print(parser.trace)
+                pp.pprint(parser.counters)
+            tma.apply(counters=parser)
+            if DEBUG:
+                print("================Resolved formulas================")
+                print(tma.to_yaml_string(counters=parser))
+            tma.print_values()
+            
+
+def plot_tma(path: Path, out : str, category : str = "", show_ipc : bool = True, w : float = 4.5, h : float = 5.5, lh :float =1.08, yl : float=None) -> None:
+    for hw in ["rocket", "boom"]:
+        if hw == "rocket":
+            tma = ROCKET_TMA
+        elif hw == "boom":
+            tma = BOOM_TMA
+        else:
+            print(f"Unknown hardware configuration for {exp.name}")
+            continue
+        all_labels = []
+        all_values = []
+        all_ipcs = []
+        all_benchmarks = []
+        experiments = sorted(get_experiments(path, hw_filter=hw), key=lambda exp: exp.name)
+
+        for exp in experiments:
+            print(exp)
+            for result in exp.results:
+                counts = PMUCounterParser(result.file_path)
+                tma.apply(counters=counts)
+                categories, values, ipc = tma.to_plot(category=category)
+                all_labels = categories
+                all_values.append(values)
+                all_ipcs.append(ipc)
+                all_benchmarks.append(result.name)
+            
+        
+        print((all_benchmarks, all_values, all_ipcs))
+        combined = list(zip(all_benchmarks, all_values, all_ipcs))
+        combined.sort(key=lambda item: item[0])
+        print(combined)
+        if not combined:
+            print(f"No data available for {hw} in category '{category}'.")
+            continue
+        all_benchmarks, all_values, all_ipcs = map(list, zip(*combined))
+        all_benchmarks = [sanitize_benchmark_name(x) for x in all_benchmarks] 
+        
+        
+        
+        if all_labels and all_values:
+            create_tma_plot(
+                out_name=f"{OUT_DIR}/{out}_{hw}_{category}_tma_plot",
+                benchmarks=all_benchmarks,
+                labels=all_labels,
+                list_of_values=all_values,
+                IPCS=all_ipcs,
+                show_ipc=show_ipc,
+                corewidth=tma.get_corewidth(),
+                width=w,
+                height=h,
+                lh=lh,
+                ylim=yl
+            )
+        else:
+            print(f"No data available for {hw} in category '{category}'.")
+            
+
+
+def plot_count_diffs(
+    path: Path,
+    trace: bool,
+    out: str,
+    w: float = 4.5,
+    h: float = 5.5,
+    lh: float = 1.08,
+    yl: Optional[float] = None,
+) -> None:
+    """
+    Load counter data (PMU or trace) from each experiment under `path`,
+    aggregate lane‐specific counters (e.g., fetchbubble0, fetchbubble1 → fetchbubble),
+    compute per‐experiment differences relative to the first experiment,
+    and emit a bar plot of those differences.
+    """
+    experiments = get_experiments(path, hw_filter="boom")  # returns list of Experiment, each with .name and .results
+    series_list = []    
+    f = ["FetchBubble", "UopsIssued", "DBlocked"]
+    agg = {}
+    for exp in experiments:
+        # aggregate counters for this experiment
+        for result in exp.results:
+            parser = (
+                TraceParser(result.trace_file_path, BOOM_TRACE, BOOM_TRACE_COLUMNS)
+                if trace
+                else PMUCounterParser(result.file_path)
+            )
+            counts = parser.counters
+            counts = {
+                k: v
+                for k, v in counts.items()
+                if re.search(r'\d+$', k)
+            }
+            
+            cycles = parser.get_counter("Cycle")
+            print(f"Size {cycles}")
+            
+            events = { re.sub(r'\d+$', '', k) for k in counts.keys() } 
+            lane_re = re.compile(r'^(.*?)(\d+)$')
+            grouped = defaultdict(list)
+
+            for k, v in counts.items():
+                m = lane_re.match(k)
+                if m:
+                    base, lane = m.group(1), int(m.group(2))
+                    grouped[base].append((lane, v))
+
+            grouped = {base: [v / cycles for _, v in sorted(vals)] for base, vals in grouped.items() if base in f}
+            agg_result = grouped
+            
+            agg[sanitize_benchmark_name(result.name)] = agg_result
+            
+            if DEBUG:
+                print(f"Aggregated counters for {exp.name}:")               
+                print(events)
+                print(grouped)
+                print(agg_result)
+    if DEBUG:
+        pp.pprint(agg)
+    # --- print ASCII table ---
+    # determine all lane counts per event
+    max_lanes = {evt: max(len(vals.get(evt, [])) for vals in agg.values()) for evt in f}
+
+    for evt in f:
+        cols = [f"{evt}"] + [f"Lane{i}" for i in range(max_lanes[evt])]
+        widths = {c: len(c)+2 for c in cols}
+        rows = []
+        for res, evmap in agg.items():
+            row = [res]
+            vals = evmap.get(evt, [])
+            vals = vals + ["N/A"]*(max_lanes[evt]-len(vals))
+            row += [f"{v:.2f}" if isinstance(v, (int,float)) else v for v in vals]
+            for c, cell in zip(cols, row):
+                widths[c] = max(widths[c], len(str(cell))+2)
+            rows.append(row)
+
+        sep = "".join("-"*widths[c] for c in cols)
+        print(sep)
+        print("".join(c.ljust(widths[c]) for c in cols))
+        print(sep)
+        for row in rows:
+            print("".join(str(cell).ljust(widths[c]) for cell, c in zip(row, cols)))
+        print(sep, "\n")
+
+    create_count_plot(out_name=f"{OUT_DIR}/{out}_count_diff", data=agg, width=w, height=h, lh=lh, ylim=yl)
+            
+
+
+
+def compare_models(
+    path: Path,
+    out_name: str,
+    models: Optional[List[str]] = None,
+    trace: bool = False,
+    category: str = "",
+    show_ipc: bool = True,
+    width: float = 4.5,
+    height: float = 5.5,
+    legend_height: float = 1.08,
+    y_limit: Optional[float] = None,
+) -> None:
+    """
+    Compare two TMA models over all experiments and results, printing debug info
+    as we go and at the end a table of the percent-difference for `category`.
+    """
+    # resolve model names → TMA instances
+    models = [(x, MODELS_MAP[x]) for x in (models or [])]
+    if len(models) < 2:
+        print("Need at least two models for comparison.", file=sys.stderr)
+        return
+
+    (name1, tma1), (name2, tma2) = models[:2]
+    delta_rows = []
+
+    experiments = get_experiments(path, hw_filter="boom")
+    for exp in experiments:
+        print(exp)
+        for result in exp.results:
+            parser = (
+                TraceParser(result.trace_file_path, BOOM_TRACE, BOOM_TRACE_COLUMNS)
+                if trace
+                else PMUCounterParser(result.file_path)
+            )
+
+            print(f"Applying {name1} on {result.name}")
+            if DEBUG:
+                print("================Resolved formulas for", name1, "================")
+                print(tma1.to_yaml_string())
+            tma1.apply(counters=parser)
+            tma1.print_values()
+
+            print(f"Applying {name2} on {result.name}")
+            if DEBUG:
+                print("================Resolved formulas for", name2, "================")
+                print(tma2.to_yaml_string())
+            tma2.apply(counters=parser)
+            tma2.print_values()
+
+            # --- pull out the numeric result from the named Category ---
+            # here we assume each Category object has a `.value` attribute
+            cat1 = tma1.categories.get(category)
+            cat2 = tma2.categories.get(category)
+            v1 = cat1.value if cat1 is not None else None
+            v2 = cat2.value if cat2 is not None else None
+            pct = (v2 - v1) / v1 * 100 if (v1 not in (None, 0)) else None
+
+            delta_rows.append({
+                "Experiment": f"{exp.name} ({category})" ,
+                "Result":     result.name,
+                name1:        v1,
+                name2:        v2,
+                "Δ%":         pct
+            })
+
+    # print summary table
+    header = ["Experiment", "Result", name1, name2, "Δ%"]
+    col_widths = {
+        h: max(
+            len(h),
+            *(
+                len(f"{row[h]:.2f}") if isinstance(row[h], (int, float))
+                else len(str(row[h]))
+                for row in delta_rows
+            )
+        ) + 2
+        for h in header
+    }
+    sep = "".join("-" * col_widths[h] for h in header)
+    print(sep)
+    print("".join(h.ljust(col_widths[h]) for h in header))
+    print(sep)
+    for row in delta_rows:
+        def fmt(h):
+            v = row[h]
+            if isinstance(v, float):
+                return f"{v:.2f}"
+            return str(v) if v is not None else "N/A"
+        print("".join(fmt(h).ljust(col_widths[h]) for h in header))
+    print(sep)
+
+def main() -> None:
+    global DEBUG
+    parser = argparse.ArgumentParser(
+        description="Tool to process and analyze TMA experiment results"
+    )
+    group = parser.add_mutually_exclusive_group(required=True)
+
+    parser.add_argument("path", type=Path, help="Path to experiments folder")
+    group.add_argument("--show-exp", action="store_true", help="Show experiment structure and results")
+    group.add_argument("--show-counters", action="store_true", help="Show raw PMU counter values")
+    group.add_argument("--show-tma", action="store_true", help="Evaluate and show TMA results")
+    
+    group.add_argument("--show-tma-trace", action="store_true", help="Evaluate and show TMA results on trace")
+    group.add_argument("--plot-trace", action="store_true", help="Generate trace heatmap plot")
+    group.add_argument("--plot-tma", action="store_true", help="Generate TMA plots")
+    
+    group.add_argument("--plot-count-diffs", action="store_true", help="Plot counter differences between models")
+    
+    group.add_argument("--compare-models", action="store_true", help="Compare TMA models")
+    group.add_argument("--compare-models-trace", action="store_true", help="Compare TMA models")
+    group.add_argument("--temporal-tma", action="store_true", help="Run temporal TMA analysis")
+    
+    parser.add_argument("--debug", action="store_true", help="Verbose output")
+    parser.add_argument("--trace", action="store_true", help="Verbose output")
+    
+    parser.add_argument("--dump-trace", action="store_true", help="Ouptput trace ")
+    
+    
+    parser.add_argument("-o", "--outdir", type=str, help="Override output directory", default=None)
+
+
+    # Plotting arguments
+    parser.add_argument("--ipc", action="store_true", help="Show ipc in plot")
+    parser.add_argument("--n", type=int, help="Number of trace rows to print", default=100)
+    parser.add_argument("--start", type=int, help="Start cycle", default=0)
+    parser.add_argument("--cat", type=str, help="Category to plot (e.g., Backend, Frontend, etc.) or Filter by in trace", default="")
+    parser.add_argument("--out", type=str, help="Name of output plot", default="last")
+    parser.add_argument("--w", type=float, help="Width of plot", default=4.5)
+    parser.add_argument("--h", type=float, help="Height of plot", default=5.5)
+    parser.add_argument("--lh", type=float, help="legend height", default=1.08)
+    parser.add_argument("--yl", type=float, help="ylim", default=None)
+
+    
+    parser.add_argument("--models", type=str, nargs='+', help="List of models to compare", default=["BOOM_TMA"])
+    
+    parser.add_argument("--benchmarks", type=str, nargs='+', help="List of models to compare", default=[])
+    
+    args = parser.parse_args()
+    DEBUG = args.debug
+
+    global OUT_DIR
+    if args.outdir is not None:
+        OUT_DIR = args.outdir
+
+    if args.show_exp:
+        show_exp(args.path)
+    elif args.show_counters:
+        show_counters(args.path)
+    elif args.show_tma:
+        show_tma(args.path)
+    elif args.plot_tma:
+        plot_tma(args.path, out=args.out, category=args.cat, show_ipc=args.ipc, w=args.w, h=args.h, lh=args.lh, yl=args.yl)
+    elif args.plot_trace:
+        plot_trace(args.path, out=args.out,  n=args.n, start=args.start, filters_name=args.cat, dump=args.dump_trace)
+    elif args.compare_models:compare_models(
+        path=args.path,
+        out_name=args.out,
+        models=args.models,
+        trace=args.trace,
+        category=args.cat,
+        show_ipc=args.ipc,
+        width=args.w,
+        height=args.h,
+        legend_height=args.lh,
+        y_limit=args.yl,
+    )
+    
+    elif args.plot_count_diffs:
+        plot_count_diffs(args.path,trace=args.trace, out=args.out, w=args.w, h=args.h, lh=args.lh, yl=args.yl)
+        
+    else:
+        parser.print_help()
+
+
+if __name__ == "__main__":
+    main()

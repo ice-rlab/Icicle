@@ -1,0 +1,292 @@
+diff --git a/deploy/awstools/awstools.py b/deploy/awstools/awstools.py
+index a3c8865c..ce96e0d1 100755
+--- a/deploy/awstools/awstools.py
++++ b/deploy/awstools/awstools.py
+@@ -129,22 +129,23 @@ def get_localhost_instance_info(url_ext: str) -> Optional[str]:
+     Returns:
+         Data obtained in string form or None
+     """
+-    res = None
+-    # This takes multiple minutes without a timeout from the CI container. In
+-    # practice it should resolve nearly instantly on an initialized EC2 instance.
+-    curl_connection_timeout = 10
+-    with settings(ok_ret_codes=[0, 28]), hide("everything"):
+-        res = local(
+-            f"curl -s --connect-timeout {curl_connection_timeout} http://169.254.169.254/latest/{url_ext}",
+-            capture=True,
+-        )
+-        rootLogger.debug(res.stdout)
+-        rootLogger.debug(res.stderr)
+-
+-    if res.return_code == 28:
+-        return None
+-    else:
+-        return res.stdout
++    return None
++    # res = None
++    # # This takes multiple minutes without a timeout from the CI container. In
++    # # practice it should resolve nearly instantly on an initialized EC2 instance.
++    # curl_connection_timeout = 10
++    # with settings(ok_ret_codes=[0, 28]), hide("everything"):
++    #     res = local(
++    #         f"curl -s --connect-timeout {curl_connection_timeout} http://169.254.169.254/latest/{url_ext}",
++    #         capture=True,
++    #     )
++    #     rootLogger.debug(res.stdout)
++    #     rootLogger.debug(res.stderr)
++
++    # if res.return_code == 28:
++    #     return None
++    # else:
++    #     return res.stdout
+ 
+ 
+ def get_localhost_instance_id() -> Optional[str]:
+diff --git a/deploy/buildtools/buildconfigfile.py b/deploy/buildtools/buildconfigfile.py
+index 42684775..271f4190 100644
+--- a/deploy/buildtools/buildconfigfile.py
++++ b/deploy/buildtools/buildconfigfile.py
+@@ -64,7 +64,39 @@ class BuildConfigFile:
+         global_build_config_file = None
+         with open(args.buildconfigfile, "r") as yaml_file:
+             global_build_config_file = yaml.safe_load(yaml_file)
+-
++        
++        
++        rootLogger.warning(f"{args}")
++        rootLogger.warning(f"Global build config file: {global_build_config_file}")
++        
++        visited = []
++        for configoverridedata in args.overrideconfigdata:
++            if configoverridedata != "":
++                ## handle overriding part of the runtime conf
++                configoverrideval = configoverridedata[0].split()
++                overridesection = configoverrideval[0]
++                if len(configoverrideval) > 2:
++                    overridefield = configoverrideval[1]
++                    overridevalue = configoverrideval[2]
++                
++                    rootLogger.warning("Overriding part of the runtime config with: ")
++                    rootLogger.warning("""[{}]""".format(overridesection))
++                    rootLogger.warning(overridefield + "=" + overridevalue)
++                    if (overridesection, overridefield) not in visited:
++                        global_build_config_file[overridesection][overridefield] = overridevalue
++                    else:
++                        global_build_config_file[overridesection][overridefield] = global_build_config_file[overridesection][overridefield] + " " + overridevalue
++                    visited.append((overridesection, overridefield))
++                else:
++                    overridevalue = configoverrideval[1].split("-")[1:]
++                    rootLogger.warning("Overriding part of the runtime config with: ")
++                    rootLogger.warning("""[{}]""".format(overridesection))
++                    rootLogger.warning(overridevalue)
++                    global_build_config_file[overridesection] = overridevalue
++            
++            
++        
++        rootLogger.warning(f"Global build config file: {global_build_config_file}")
+         # aws specific options
+         self.agfistoshare = global_build_config_file["agfis_to_share"]
+         swa_dict = global_build_config_file["share_with_accounts"]
+diff --git a/deploy/firesim b/deploy/firesim
+index 69c3bf05..23566d01 100755
+--- a/deploy/firesim
++++ b/deploy/firesim
+@@ -407,9 +407,9 @@ def construct_firesim_argparser() -> argparse.ArgumentParser:
+     parser.add_argument('-a', '--hwdbconfigfile', type=str,
+                         help='Optional custom HW database config file. Defaults to config_hwdb.yaml.',
+                         default='config_hwdb.yaml')
+-    parser.add_argument('-x', '--overrideconfigdata', type=str,
++    parser.add_argument('-x', '--overrideconfigdata',
+                         help='Override a single value from one of the the RUNTIME e.g.: --overrideconfigdata "target-config link-latency 6405".',
+-                        default="")
++                        default=[], action='append', nargs="+")
+     parser.add_argument('-f', '--terminatesomef116', type=int,
+                         help='DEPRECATED. Use --terminatesome=f1.16xlarge:count instead. Will be removed in the next major version of FireSim (1.15.X). Old help message: Only used by terminaterunfarm. Terminates this many of the previously launched f1.16xlarges.',
+                         default=-1)
+diff --git a/deploy/runtools/run_farm_deploy_managers.py b/deploy/runtools/run_farm_deploy_managers.py
+index efe38057..e141e1af 100644
+--- a/deploy/runtools/run_farm_deploy_managers.py
++++ b/deploy/runtools/run_farm_deploy_managers.py
+@@ -1435,7 +1435,7 @@ class XilinxVCU118InstanceDeployManager(InstanceDeployManager):
+                 # TODO: is hardcoded cap 0x1 correct?
+                 # TODO: is "Partial Reconfig Clear File" useful (see xvsecctl help)?
+                 bdfs = [
+-                    {"busno": "0x" + i[:2], "devno": "0x" + i[3:5], "capno": "0x1"}
++                    {"busno": "0x" + i[:2], "devno": "0x" + i[3:5], "capno": "0x0"}
+                     for i in collect.splitlines()
+                     if len(i.strip()) >= 0
+                 ]
+diff --git a/deploy/runtools/runtime_config.py b/deploy/runtools/runtime_config.py
+index 5d7d1cfe..dbfc8ff8 100644
+--- a/deploy/runtools/runtime_config.py
++++ b/deploy/runtools/runtime_config.py
+@@ -782,6 +782,7 @@ class RuntimeBuildRecipeConfig(RuntimeHWConfig):
+         build_recipe_dict: Dict[str, Any],
+         build_recipes_config_file: str,
+         default_metasim_host_sim: str,
++        metasimulation_wave_format: str,
+         metasimulation_only_plusargs: str,
+         metasimulation_only_vcs_plusargs: str,
+     ) -> None:
+@@ -824,6 +825,7 @@ class RuntimeBuildRecipeConfig(RuntimeHWConfig):
+         # note whether we've built a copy of the simulation driver for this hwconf
+         self.driver_built = False
+         self.metasim_host_simulator = default_metasim_host_sim
++        self.metasimulation_wave_format = metasimulation_wave_format
+ 
+         # currently only f1 metasims supported
+         self.platform = build_recipe_dict.get("PLATFORM", "f1")
+@@ -884,7 +886,10 @@ class RuntimeBuildRecipeConfig(RuntimeHWConfig):
+         if self.metasim_host_simulator == "verilator-debug":
+             full_extra_plusargs += " +waveformfile=metasim_waveform.vcd "
+         if self.metasim_host_simulator == "vcs-debug":
+-            full_extra_plusargs += " +fsdbfile=metasim_waveform.fsdb "
++            if self.metasimulation_wave_format == "vpd":
++                full_extra_plusargs += " +vcdplusfile=metasim_waveform.vpd "
++            elif self.metasimulation_wave_format == "fsdb":
++                full_extra_plusargs += " +fsdbfile=metasim_waveform.fsdb "
+         # TODO: spike-dasm support
+         full_extra_args = " 2> metasim_stderr.out " + extra_args
+         return super(RuntimeBuildRecipeConfig, self).get_boot_simulation_command(
+@@ -951,6 +956,7 @@ class RuntimeBuildRecipes(RuntimeHWDB):
+         self,
+         build_recipes_config_file: str,
+         metasim_host_simulator: str,
++        metasimulation_wave_format: str,
+         metasimulation_only_plusargs: str,
+         metasimulation_only_vcs_plusargs: str,
+     ) -> None:
+@@ -969,6 +975,7 @@ class RuntimeBuildRecipes(RuntimeHWDB):
+                 v,
+                 build_recipes_config_file,
+                 metasim_host_simulator,
++                metasimulation_wave_format,
+                 metasimulation_only_plusargs,
+                 metasimulation_only_vcs_plusargs,
+             )
+@@ -999,30 +1006,44 @@ class InnerRuntimeConfiguration:
+     terminateoncompletion: bool
+     metasimulation_enabled: bool
+     metasimulation_host_simulator: str
++    metasimulation_host_simulator: str
+     metasimulation_only_plusargs: str
+     metasimulation_only_vcs_plusargs: str
+     default_plusarg_passthrough: str
+ 
+-    def __init__(self, runtimeconfigfile: str, configoverridedata: str) -> None:
++    def __init__(self, runtimeconfigfile: str, configoverridedatalist: List[str]) -> None:
+ 
++        
++        rootLogger.warning(configoverridedatalist)
+         runtime_configfile = None
+         with open(runtimeconfigfile, "r") as yaml_file:
+             runtime_configfile = yaml.safe_load(yaml_file)
+ 
+         runtime_dict = runtime_configfile
+ 
++        
++        visited = []
+         # override parts of the runtime conf if specified
+-        if configoverridedata != "":
+-            ## handle overriding part of the runtime conf
+-            configoverrideval = configoverridedata.split()
+-            overridesection = configoverrideval[0]
+-            overridefield = configoverrideval[1]
+-            overridevalue = configoverrideval[2]
+-            rootLogger.warning("Overriding part of the runtime config with: ")
+-            rootLogger.warning("""[{}]""".format(overridesection))
+-            rootLogger.warning(overridefield + "=" + overridevalue)
+-            runtime_dict[overridesection][overridefield] = overridevalue
+-
++        for configoverridedata in configoverridedatalist:
++            if configoverridedata != "":
++                ## handle overriding part of the runtime conf
++                configoverrideval = configoverridedata[0].split()
++                overridesection = configoverrideval[0]
++                overridefield = configoverrideval[1]
++                overridevalue = configoverrideval[2]
++                
++                rootLogger.warning("Overriding part of the runtime config with: ")
++                rootLogger.warning("""[{}]""".format(overridesection))
++                rootLogger.warning(overridefield + "=" + overridevalue)
++                if (overridesection, overridefield) not in visited:
++                    runtime_dict[overridesection][overridefield] = overridevalue
++                else:
++                    runtime_dict[overridesection][overridefield] = runtime_dict[overridesection][overridefield] + " " + overridevalue
++                visited.append((overridesection, overridefield))
++                
++        for key, value in runtime_dict.items():
++            rootLogger.warning(f"Runtime config: {key} = {value}")
++        
+         def dict_assert(key_check, dict_name):
+             assert (
+                 key_check in dict_name
+@@ -1036,6 +1057,12 @@ class InnerRuntimeConfiguration:
+         self.metasimulation_host_simulator = metasim_dict[
+             "metasimulation_host_simulator"
+         ]
++        if "metasimulation_wave_format" in metasim_dict:
++            self.metasimulation_wave_format = metasim_dict[
++                "metasimulation_wave_format"
++            ]
++        else:
++            self.metasimulation_wave_format = "vpd"
+         dict_assert("metasimulation_only_plusargs", metasim_dict)
+         self.metasimulation_only_plusargs = metasim_dict["metasimulation_only_plusargs"]
+         dict_assert("metasimulation_only_vcs_plusargs", metasim_dict)
+@@ -1135,6 +1162,7 @@ class RuntimeConfig:
+         self.runtime_build_recipes = RuntimeBuildRecipes(
+             args.buildrecipesconfigfile,
+             self.innerconf.metasimulation_host_simulator,
++            self.innerconf.metasimulation_wave_format,
+             self.innerconf.metasimulation_only_plusargs,
+             self.innerconf.metasimulation_only_vcs_plusargs,
+         )
+diff --git a/deploy/workloads/br-base-uniform.json b/deploy/workloads/br-base-uniform.json
+index f53f281b..353c201f 100644
+--- a/deploy/workloads/br-base-uniform.json
++++ b/deploy/workloads/br-base-uniform.json
+@@ -1,12 +1,12 @@
+ {
+   "benchmark_name": "br-base-uniform",
+-  "common_bootbinary": "../../../target-design/chipyard/software/firemarshal/images/firechip/br-base/br-base-bin",
+-  "common_rootfs": "../../../target-design/chipyard/software/firemarshal/images/firechip/br-base/br-base.img"
++  "common_bootbinary": "../../../../../../chipyard/software/firemarshal/images/firechip/br-base/br-base-bin",
++  "common_rootfs": "../../../../../../chipyard/software/firemarshal/images/firechip/br-base/br-base.img",
+   "common_outputs": [
+     "/etc/os-release"
+   ],
+   "common_simulation_outputs": [
+     "uartlog",
+     "memory_stats*.csv"
+-  ],
++  ]
+ }
+diff --git a/platforms/xilinx_vcu118/garnet-firesim b/platforms/xilinx_vcu118/garnet-firesim
+--- a/platforms/xilinx_vcu118/garnet-firesim
++++ b/platforms/xilinx_vcu118/garnet-firesim
+@@ -1 +1 @@
+-Subproject commit 9265cf4f0e13c48c96bfce2e8d4813a34af8fa48
++Subproject commit 9265cf4f0e13c48c96bfce2e8d4813a34af8fa48-dirty
+diff --git a/sim/midas/src/main/cc/rtlsim/Makefrag-vcs b/sim/midas/src/main/cc/rtlsim/Makefrag-vcs
+index 0adc01ae..f3bc5ab7 100644
+--- a/sim/midas/src/main/cc/rtlsim/Makefrag-vcs
++++ b/sim/midas/src/main/cc/rtlsim/Makefrag-vcs
+@@ -25,6 +25,8 @@ vcs_flags := \
+ 	$(SIM_PREPROC_DEFINES) \
+ 	$(vcs_flags)
+ 
++VCS_WAVE_FORMAT ?= VPD
++
+ vcs_v := $(emul_v) $(sim_wrapper_v)
+ vcs_cc := $(emul_cc) $(sim_harness)
+ 
+@@ -41,7 +43,7 @@ vcs_debug_flags := \
+ 	-debug_access+all \
+ 	-kdb \
+ 	-lca \
+-	+define+FSDB \
++	+define+$(VCS_WAVE_FORMAT) \
+ 	+define+DEBUG
+ 
+ $(OUT_DIR)/$(DRIVER_NAME): $(vcs_v) $(vcs_cc) $(emul_h)

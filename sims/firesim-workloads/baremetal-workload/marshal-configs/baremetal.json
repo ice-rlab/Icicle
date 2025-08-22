@@ -1,0 +1,7 @@
+{
+  "name" : "baremetal",
+  "base": "bare-base.json",
+  "workdir" : "..",
+  "host-init" : "build.sh",
+  "bin": "hello"
+}

@@ -1,0 +1,8 @@
+{
+  "name" : "bare-trace",
+  "base": "bare-base.json",
+  "workdir" : "..",
+  "host-init" : "build.sh",
+  "bin": "hello",
+  "post_run_hook": "gen-trace.sh"
+}

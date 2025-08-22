@@ -1,0 +1,8 @@
+{
+  "name" : "branchmiss-bare",
+  "base" : "bare-base.json",
+  "workdir" : "..",
+  "host-init" : "build.sh",
+  "bin": "branch_miss",
+  "post_run_hook": "gen-cpi.sh"
+}

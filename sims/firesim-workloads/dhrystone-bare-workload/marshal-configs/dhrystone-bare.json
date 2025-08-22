@@ -1,0 +1,8 @@
+{
+  "name" : "dhrystone-bare",
+  "base" : "bare-base.json",
+  "workdir" : "..",
+  "host-init" : "build.sh",
+  "bin": "dhrystone.riscv",
+  "post_run_hook": "post_run.sh"
+}

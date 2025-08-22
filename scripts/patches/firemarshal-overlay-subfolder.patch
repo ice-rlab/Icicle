@@ -1,0 +1,46 @@
+diff --git a/wlutil/wlutil.py b/wlutil/wlutil.py
+index b68631f..e8f5955 100644
+--- a/wlutil/wlutil.py
++++ b/wlutil/wlutil.py
+@@ -723,24 +723,27 @@ def copyImgFiles(img, files, direction):
+             # remove duplicates but keep order
+             dirsToModify = list(dict.fromkeys(dirsToModify))
+ 
+-            for dirPath in dirsToModify:
+-                perms = int(oct(os.stat(dirPath).st_mode)[-3:], 8)
+-                log.debug(f"Changing permissions of {dirPath} from {oct(perms)}:{type(perms)} to {oct(relaxedPerms)} temporarily")
+-                assert dirPath not in oldPerms, f"Something went wrong. Expected that {dirPath}'s permissions aren't already set"
+-                oldPerms[dirPath] = perms
+-                os.chmod(dirPath, relaxedPerms)
+-                newPerms = int(oct(os.stat(dirPath).st_mode)[-3:], 8)
+-                assert newPerms == relaxedPerms, f"Unable to set perms of {dirPath} to {oct(relaxedPerms)}"
++            # for dirPath in dirsToModify:
++            #     perms = int(oct(os.stat(dirPath).st_mode)[-3:], 8)
++            #     log.debug(f"Changing permissions of {dirPath} from {oct(perms)}:{type(perms)} to {oct(relaxedPerms)} temporarily")
++            #     assert dirPath not in oldPerms, f"Something went wrong. Expected that {dirPath}'s permissions aren't already set"
++            #     oldPerms[dirPath] = perms
++            #     os.chmod(dirPath, relaxedPerms)
++            #     newPerms = int(oct(os.stat(dirPath).st_mode)[-3:], 8)
++            #     assert newPerms == relaxedPerms, f"Unable to set perms of {dirPath} to {oct(relaxedPerms)}"
+ 
+             try:
++                print(f"Runn copy command: {cpSrcResPath} to {cpDstResPath}")
+                 run(['cp', '-a', '-f', cpSrcResPath, cpDstResPath])
+             finally:
+-                for dirPath in dirsToModify:
+-                    perms = oldPerms[dirPath]
+-                    log.debug(f"Changing permissions of {dirPath} back from {oct(relaxedPerms)} to {oct(perms)}:{type(perms)}")
+-                    os.chmod(dirPath, perms)
+-                    # verify it's right
+-                    assert int(oct(os.stat(dirPath).st_mode)[-3:], 8) == perms, "Unable to revert permissions"
++                pass
++                # for dirPath in dirsToModify:
++                #     # perms = oldPerms[dirPath]
++                #     perms = permissive
++                #     log.debug(f"Changing permissions of {dirPath} back from {oct(relaxedPerms)} to {oct(perms)}:{type(perms)}")
++                #     os.chmod(dirPath, perms)
++                #     # verify it's right
++                #     assert int(oct(os.stat(dirPath).st_mode)[-3:], 8) == perms, "Unable to revert permissions"
+ 
+ 
+ def applyOverlay(img, overlay):
