@@ -1,0 +1,92 @@
+
+## IISWIC 2025 AE configs
+
+rocket:
+    PLATFORM: xilinx_vcu118
+    TARGET_PROJECT: firesim
+    TARGET_PROJECT_MAKEFRAG: null
+    DESIGN: FireSim
+    TARGET_CONFIG: FireSimRocket1GiBDRAMConfig
+    PLATFORM_CONFIG: BaseXilinxVCU118Config
+    deploy_quintuplet: null
+    platform_config_args:
+        fpga_frequency: 90
+        build_strategy: TIMING
+    post_build_hook: null
+    metasim_customruntimeconfig: null
+    bit_builder_recipe: bit-builder-recipes/xilinx_vcu118.yaml
+
+rocket_small_cache:
+    PLATFORM: xilinx_vcu118
+    TARGET_PROJECT: firesim
+    TARGET_PROJECT_MAKEFRAG: null
+    DESIGN: FireSim
+    TARGET_CONFIG: FireSimRocketSmallCache1GiBDRAMConfig
+    PLATFORM_CONFIG: BaseXilinxVCU118Config
+    deploy_quintuplet: null
+    platform_config_args:
+        fpga_frequency: 90
+        build_strategy: TIMING
+    post_build_hook: null
+    metasim_customruntimeconfig: null
+    bit_builder_recipe: bit-builder-recipes/xilinx_vcu118.yaml
+
+large_boom_scalar:
+    PLATFORM: xilinx_vcu118
+    TARGET_PROJECT: firesim
+    TARGET_PROJECT_MAKEFRAG: null
+    DESIGN: FireSim
+    TARGET_CONFIG: FireSimLargeBoomScalarCounters1GiBConfig
+    PLATFORM_CONFIG: BaseXilinxVCU118Config
+    deploy_quintuplet: null
+    platform_config_args:
+        fpga_frequency: 90
+        build_strategy: TIMING
+    post_build_hook: null
+    metasim_customruntimeconfig: null
+    bit_builder_recipe: bit-builder-recipes/xilinx_vcu118.yaml
+
+large_boom_add_wires:
+    PLATFORM: xilinx_vcu118
+    TARGET_PROJECT: firesim
+    TARGET_PROJECT_MAKEFRAG: null
+    DESIGN: FireSim
+    TARGET_CONFIG: FireSimLargeBoomAddWires1GiBConfig
+    PLATFORM_CONFIG: BaseXilinxVCU118Config
+    deploy_quintuplet: null
+    platform_config_args:
+        fpga_frequency: 90
+        build_strategy: TIMING
+    post_build_hook: null
+    metasim_customruntimeconfig: null
+    bit_builder_recipe: bit-builder-recipes/xilinx_vcu118.yaml
+
+large_boom_distributed_counters:
+    PLATFORM: xilinx_vcu118
+    TARGET_PROJECT: firesim
+    TARGET_PROJECT_MAKEFRAG: null
+    DESIGN: FireSim
+    TARGET_CONFIG: FireSimLargeBoomDistributedCounters1GiBConfig
+    PLATFORM_CONFIG: BaseXilinxVCU118Config
+    deploy_quintuplet: null
+    platform_config_args:
+        fpga_frequency: 90
+        build_strategy: TIMING
+    post_build_hook: null
+    metasim_customruntimeconfig: null
+    bit_builder_recipe: bit-builder-recipes/xilinx_vcu118.yaml
+
+large_boom_small_cache:
+    PLATFORM: xilinx_vcu118
+    TARGET_PROJECT: firesim
+    TARGET_PROJECT_MAKEFRAG: null
+    DESIGN: FireSim
+    TARGET_CONFIG: FireSimBoomScalarCountersSmallCacheConfig
+    PLATFORM_CONFIG: BaseXilinxVCU118Config
+    deploy_quintuplet: null
+    platform_config_args:
+        fpga_frequency: 90
+        build_strategy: TIMING
+    post_build_hook: null
+    metasim_customruntimeconfig: null
+    bit_builder_recipe: bit-builder-recipes/xilinx_vcu118.yaml

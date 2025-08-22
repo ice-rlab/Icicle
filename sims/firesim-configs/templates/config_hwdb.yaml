@@ -1,0 +1,42 @@
+xilinx_vcu118_firesim_rocket_singlecore_1GB_no_nic: # THis is latest version now
+    bitstream_tar: file:///home/wmatt/riscv-performance-characterization/platforms/chipyard/sims/firesim/deploy/results-build/2025-04-12--19-58-10-xilinx_vcu118_firesim_rocket_singlecore_1GB_no_nic/cl_xilinx_vcu118-firesim-FireSim-FireSimRocket1GiBDRAMConfig-BaseXilinxVCU118Config/firesim.tar.gz
+    deploy_quintuplet_override: null
+    custom_runtime_config: null
+
+xilinx_vcu118_firesim_boom_1GB_no_nic:
+    bitstream_tar: file:///home/wmatt/riscv-performance-characterization/platforms/chipyard/sims/firesim/deploy/results-build/2025-04-12--21-46-41-xilinx_vcu118_firesim_boom_1GB_no_nic/cl_xilinx_vcu118-firesim-FireSim-FireSimLarge1GiBDRAMBoomConfig-BaseXilinxVCU118Config/firesim.tar.gz
+    deploy_quintuplet_override: null
+    custom_runtime_config: null
+
+xilinx_vcu118_firesim_boom_1GB_no_nic_large_scalar_counters:
+    bitstream_tar: file:///home/wmatt/riscv-performance-characterization/platforms/chipyard/sims/firesim/deploy/results-build/2025-04-15--16-54-38-xilinx_vcu118_firesim_boom_1GB_no_nic_large_scalar_counters/cl_xilinx_vcu118-firesim-FireSim-FireSimLargeBoomScalarCounters1GiBConfig-BaseXilinxVCU118Config/firesim.tar.gz
+    deploy_quintuplet_override: null
+    custom_runtime_config: null
+
+xilinx_vcu118_firesim_boom_1GB_no_nic_large_add_wires:
+    bitstream_tar: file:///home/wmatt/riscv-performance-characterization/platforms/chipyard/sims/firesim/deploy/results-build/2025-04-17--02-02-56-xilinx_vcu118_firesim_boom_1GB_no_nic_large_add_wires/cl_xilinx_vcu118-firesim-FireSim-FireSimLargeBoomAddWires1GiBConfig-BaseXilinxVCU118Config/firesim.tar.gz
+    deploy_quintuplet_override: null
+    custom_runtime_config: null
+
+xilinx_vcu118_firesim_boom_4GB_no_nic:
+    bitstream_tar: file:///home/wmatt/riscv-performance-characterization/platforms/chipyard/sims/firesim/deploy/results-build/2025-04-18--15-44-48-xilinx_vcu118_firesim_boom_4GB_no_nic/cl_xilinx_vcu118-firesim-FireSim-FireSimLarge4GiBDRAMBoomConfig-BaseXilinxVCU118Config/firesim.tar.gz
+    deploy_quintuplet_override: null
+    custom_runtime_config: null
+
+xilinx_vcu118_firesim_boom_1GB_no_nic_large_distributed_counters:
+    bitstream_tar: file:///home/wmatt/riscv-performance-characterization/platforms/chipyard/sims/firesim/deploy/results-build/2025-04-19--19-42-04-xilinx_vcu118_firesim_boom_1GB_no_nic_large_distributed_counters/cl_xilinx_vcu118-firesim-FireSim-FireSimLarge1GiBDRAMBoomWithLargeDistributedCountersConfig-BaseXilinxVCU118Config/firesim.tar.gz
+    deploy_quintuplet_override: null
+    custom_runtime_config: null
+
+
+xilinx_vcu118_firesim_megaboom1GB_no_nic_large_distributed_counters:
+    bitstream_tar: file:///home/wmatt/riscv-performance-characterization/platforms/chipyard/sims/firesim/deploy/results-build/2025-04-22--14-37-19-xilinx_vcu118_firesim_megaboom1GB_no_nic_large_distributed_counters/cl_xilinx_vcu118-firesim-FireSim-FireSimMega4GiBDRAMBoomWithMegaDistributedCountersConfig-BaseXilinxVCU118Config/firesim.tar.gz
+    deploy_quintuplet_override: null
+    custom_runtime_config: null
+
+
+xilinx_vcu118_firesim_megaboom1GB_no_nic_large_add_wires:
+    bitstream_tar: file:///home/wmatt/riscv-performance-characterization/platforms/chipyard/sims/firesim/deploy/results-build/2025-04-22--19-23-12-xilinx_vcu118_firesim_megaboom1GB_no_nic_large_add_wires/cl_xilinx_vcu118-firesim-FireSim-FireSimMega4GiBDRAMBoomWithMegaAddWiresConfig-BaseXilinxVCU118Config/firesim.tar.gz
+    deploy_quintuplet_override: null
+    custom_runtime_config: null
+

@@ -22,7 +22,7 @@
 #if defined ROCKET
 
 
-const char* counter_names[MAX_PMU_COUNT] =  { \
+const char* counter_names[MAX_PMU_COUNT] = { \
     "Cycle", \
     "IntRet", \
     "SlotsIssued", \

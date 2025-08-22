@@ -1,4 +1,4 @@
 overlay/
 *.o
 *.dump
-mtmatmul.riscv
+mt-matmul.riscv

@@ -52,7 +52,7 @@ define_metric -name longest_csr_path
 set_metric -name longest_csr_path -value "$longest_csr_path"
 
 if { !$in_flow } {
-    snapshot -name $step -dbs_dir $iv::OutDir/dbs -metrics_dir $iv::metricsDir
+#    snapshot -name $step -dbs_dir $iv::OutDir/dbs -metrics_dir $iv::metricsDir
     exit
 } else {
     puts "Continuing"

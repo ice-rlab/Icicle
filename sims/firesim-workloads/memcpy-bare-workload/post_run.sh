@@ -13,7 +13,7 @@ out=$(basename "$(dirname $1)")
 
 for i in $FILESITER
 do
-    cat $1/$i | tail -n 60 | head -n 46 > $1/memcpy-bare0/cpi/memcpy.cpi
+    awk '/scounteren:/ {found=1; next} found' $1/$i > $1/memcpy-bare0/cpi/memcpy.cpi
 done
 
 wait

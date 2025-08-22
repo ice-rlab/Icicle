@@ -7,3 +7,5 @@ out
 .scalafmt.conf
 __pycache__
 setup
+iiswc-2025-ae-out/
+icicle-iiswc2025-data.tar*

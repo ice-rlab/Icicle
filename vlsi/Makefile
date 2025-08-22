@@ -88,7 +88,7 @@ run-synth-sim:
 
 .PHONY: vlsi_plot
 vlsi_plot:
-	$(PYTHON) ./scripts/vlsi_plot.py ./data/stats.csv ./data/vlsi
+	$(PYTHON) ./scripts/vlsi_plot.py $(PC_DIR)/iiswc-2025-ae-out/vlsi/stats.csv $(PC_DIR)/iiswc-2025-ae-out/vlsi/vlsi
 
 ###################
 ##### Cleanup #####

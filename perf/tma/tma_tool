@@ -525,6 +525,8 @@ def main() -> None:
     global OUT_DIR
     if args.outdir is not None:
         OUT_DIR = args.outdir
+        
+    os.makedirs(OUT_DIR, exist_ok=True)
 
     if args.show_exp:
         show_exp(args.path)

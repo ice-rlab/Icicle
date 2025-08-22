@@ -1,4 +1,5 @@
 
+CD_TEMPLATE_DIR ?= $(HOME)/cu-adam-flows/cu-adam-flow-template
 CD_ROOT_DIR ?= $(HOME)/cu-adam-flows
 CD_DIR ?= cu-adam-flow-$(CONFIG_NICKNAME)
 CD_DEST = $(abspath $(CD_ROOT_DIR)/$(CD_DIR))
@@ -15,11 +16,14 @@ cadence-help:
 	@echo "    cd-run_pnr-route: Run routing"
 	@echo "    cd-report: Report statistics from all configurations"
 
+.PHONY: cd-locate
+cd-locate:
+	@echo $(CD_DEST)
+
 .PHONY: cd-add
 cd-add:
 	@mkdir -p $(CD_ROOT_DIR); \
-	[ ! -d $(CD_DEST) ] && git clone git\@github.com:ice-rlab/cu-adam-flow.git $(CD_DEST); \
-		pushd $(CD_DEST); git pull --force; popd; \
+	[ ! -d $(CD_DEST) ] && cp -r $(CD_TEMPLATE_DIR) $(CD_DEST); \
 		mkdir -p $(CD_DEST)/input/plugs/innovus; \
 		ln -sf $(PC_DIR)/vlsi/scripts/post_process.tcl $(CD_DEST)/input/plugs/innovus/$(CORE_TOP).place_post.tcl; \
 		$(CP) $(PC_DIR)/vlsi/plugs/cadence-metrics_filter.txt $(CD_DEST)/input/metrics/metrics_filter.txt
@@ -33,7 +37,7 @@ cd-post-process:
 
 .PHONY: cd-report
 cd-report:
-	@bash ./scripts/collect_stats.sh cadence $(CD_ROOT_DIR) $(CD_STEP) ./data/stats.csv
+	@bash ./scripts/collect_stats.sh cadence $(CD_ROOT_DIR) $(CD_STEP) $(PC_DIR)/iiswc-2025-ae-out/vlsi/stats.csv
 
 cd-%:
 	$(MAKE) -C $(CD_DEST) $*

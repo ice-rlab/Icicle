@@ -22,14 +22,17 @@ function do_make {
   # run job
   if [ -z "$code" ]; then
     echo "Writing $config output to $log_file"
+    steps=${steps:="verilog cd-add cd-run_pnr-place"}
     openroad_steps=${openroad_steps:="verilog openroad clean_OpenROAD synth do-synth-report floorplan place cts"}
-    (make CONFIG=${config} CONFIG_NICKNAME=${config_nickname} $openroad_steps OpenROAD_out |& tee $log_file) &> /dev/null
+    (make CONFIG=${config} CONFIG_NICKNAME=${config_nickname} $steps |& tee $log_file) &> /dev/null
     code=$?
   fi
 
-  # TODO parse statistics
+  # report statistics
+  make cd-report
+  make vlsi_plot
 
-  # write statistics
+  # write flow information
   echo "${config},${config_nickname},${log_file},${code}" >> $out_table
 }
 

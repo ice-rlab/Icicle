@@ -1,5 +1,5 @@
-config_build_recipes.yaml
-config_build.yaml
-config_hwdb.yaml
-config_runtime.yaml
-meta_config_runtime.yaml
+/config_build_recipes.yaml
+/config_build.yaml
+/config_hwdb.yaml
+/config_runtime.yaml
+/meta_config_runtime.yaml

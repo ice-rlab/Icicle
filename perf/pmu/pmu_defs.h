@@ -222,50 +222,50 @@ int config_pmu_counters()
     write_csr_debug(mhpmevent9,  TMA_EVT_RETIRE_WIDTH | EVT(0));  name[8]  = "Uops Retired";
     write_csr_debug(mhpmevent10, TMA_EVT_RETIRE_WIDTH | EVT(1));  name[9]  = "Fence Retired";
     write_csr_debug(mhpmevent11, TMA_EVT_RETIRE_WIDTH | EVT(2));  name[10] = "D$ Blocked";
-    write_csr_debug(mhpmevent12, TMA_EVT_COREWIDTH     | EVT(0));  name[11] = "Fetch Bubble";
-    write_csr_debug(mhpmevent13, TMA_EVT_ISSUE_WDITH   | EVT(0));  name[12] = "Uops Issued";
+    write_csr_debug(mhpmevent12, TMA_EVT_COREWIDTH    | EVT(0));  name[11] = "Fetch Bubble";
+    write_csr_debug(mhpmevent13, TMA_EVT_ISSUE_WDITH  | EVT(0));  name[12] = "Uops Issued";
 
 #elif (COREWIDTH == 1)
     write_csr_debug(mhpmevent9,  TMA_EVT_RETIRE_WIDTH | EVT(0));  name[8]  = "Uops Retired0";
     write_csr_debug(mhpmevent10, TMA_EVT_RETIRE_WIDTH | EVT(1));  name[9]  = "Fence Retired0";
     write_csr_debug(mhpmevent11, TMA_EVT_RETIRE_WIDTH | EVT(2));  name[10] = "D$ blocked0";
-    write_csr_debug(mhpmevent12, TMA_EVT_COREWIDTH     | EVT(0));  name[11] = "Fetch Bubble0";
-    write_csr_debug(mhpmevent13, TMA_EVT_ISSUE_WDITH   | EVT(0));  name[12] = "Uops Issued0";
-    write_csr_debug(mhpmevent14, TMA_EVT_ISSUE_WDITH   | EVT(1));  name[13] = "Uops Issued1";
-    write_csr_debug(mhpmevent15, TMA_EVT_ISSUE_WDITH   | EVT(2));  name[14] = "Uops Issued2";
+    write_csr_debug(mhpmevent12, TMA_EVT_COREWIDTH    | EVT(0));  name[11] = "Fetch Bubble0";
+    write_csr_debug(mhpmevent13, TMA_EVT_ISSUE_WDITH  | EVT(0));  name[12] = "Uops Issued0";
+    write_csr_debug(mhpmevent14, TMA_EVT_ISSUE_WDITH  | EVT(1));  name[13] = "Uops Issued1";
+    write_csr_debug(mhpmevent15, TMA_EVT_ISSUE_WDITH  | EVT(2));  name[14] = "Uops Issued2";
 
 #elif (COREWIDTH == 2)
     write_csr_debug(mhpmevent9,  TMA_EVT_RETIRE_WIDTH | EVT(0));  name[8]  = "Uops Retired0";
-    write_csr_debug(mhpmevent10, TMA_EVT_RETIRE_WIDTH | EVT(1));  name[9]  = "Uops Retired1";
-    write_csr_debug(mhpmevent11, TMA_EVT_RETIRE_WIDTH | EVT(2));  name[10] = "Fence Retired0";
-    write_csr_debug(mhpmevent12, TMA_EVT_RETIRE_WIDTH | EVT(3));  name[11] = "Fence Retired1";
-    write_csr_debug(mhpmevent13, TMA_EVT_RETIRE_WIDTH | EVT(4));  name[12] = "D$ Blocked0";
+    write_csr_debug(mhpmevent10, TMA_EVT_RETIRE_WIDTH | EVT(3));  name[9]  = "Uops Retired1";
+    write_csr_debug(mhpmevent11, TMA_EVT_RETIRE_WIDTH | EVT(1));  name[10] = "Fence Retired0";
+    write_csr_debug(mhpmevent12, TMA_EVT_RETIRE_WIDTH | EVT(4));  name[11] = "Fence Retired1";
+    write_csr_debug(mhpmevent13, TMA_EVT_RETIRE_WIDTH | EVT(2));  name[12] = "D$ Blocked0";
     write_csr_debug(mhpmevent14, TMA_EVT_RETIRE_WIDTH | EVT(5));  name[13] = "D$ Blocked1";
-    write_csr_debug(mhpmevent15, TMA_EVT_COREWIDTH     | EVT(0));  name[14] = "Fetch Bubble0";
-    write_csr_debug(mhpmevent16, TMA_EVT_COREWIDTH     | EVT(1));  name[15] = "Fetch Bubble1";
-    write_csr_debug(mhpmevent17, TMA_EVT_ISSUE_WDITH   | EVT(0));  name[16] = "Uops Issued0";
-    write_csr_debug(mhpmevent18, TMA_EVT_ISSUE_WDITH   | EVT(1));  name[17] = "Uops Issued1";
-    write_csr_debug(mhpmevent19, TMA_EVT_ISSUE_WDITH   | EVT(2));  name[18] = "Uops Issued2";
-    write_csr_debug(mhpmevent20, TMA_EVT_ISSUE_WDITH   | EVT(3));  name[19] = "Uops Issued3";
+    write_csr_debug(mhpmevent15, TMA_EVT_COREWIDTH    | EVT(0));  name[14] = "Fetch Bubble0";
+    write_csr_debug(mhpmevent16, TMA_EVT_COREWIDTH    | EVT(2));  name[15] = "Fetch Bubble1";
+    write_csr_debug(mhpmevent17, TMA_EVT_ISSUE_WDITH  | EVT(0));  name[16] = "Uops Issued0";
+    write_csr_debug(mhpmevent18, TMA_EVT_ISSUE_WDITH  | EVT(1));  name[17] = "Uops Issued1";
+    write_csr_debug(mhpmevent19, TMA_EVT_ISSUE_WDITH  | EVT(2));  name[18] = "Uops Issued2";
+    write_csr_debug(mhpmevent20, TMA_EVT_ISSUE_WDITH  | EVT(3));  name[19] = "Uops Issued3";
 
 #elif (COREWIDTH == 3)
     write_csr_debug(mhpmevent9,  TMA_EVT_RETIRE_WIDTH | EVT(0));  name[8]  = "Uops Retired0";
-    write_csr_debug(mhpmevent10, TMA_EVT_RETIRE_WIDTH | EVT(1));  name[9]  = "Uops Retired1";
-    write_csr_debug(mhpmevent11, TMA_EVT_RETIRE_WIDTH | EVT(2));  name[10] = "Uops Retired2";
-    write_csr_debug(mhpmevent12, TMA_EVT_RETIRE_WIDTH | EVT(3));  name[11] = "Fence Retired0";
+    write_csr_debug(mhpmevent10, TMA_EVT_RETIRE_WIDTH | EVT(3));  name[9]  = "Uops Retired1";
+    write_csr_debug(mhpmevent11, TMA_EVT_RETIRE_WIDTH | EVT(6));  name[10] = "Uops Retired2";
+    write_csr_debug(mhpmevent12, TMA_EVT_RETIRE_WIDTH | EVT(1));  name[11] = "Fence Retired0";
     write_csr_debug(mhpmevent13, TMA_EVT_RETIRE_WIDTH | EVT(4));  name[12] = "Fence Retired1";
-    write_csr_debug(mhpmevent14, TMA_EVT_RETIRE_WIDTH | EVT(5));  name[13] = "Fence Retired2";
-    write_csr_debug(mhpmevent15, TMA_EVT_RETIRE_WIDTH | EVT(6));  name[14] = "D$ Blocked0";
-    write_csr_debug(mhpmevent16, TMA_EVT_RETIRE_WIDTH | EVT(7));  name[15] = "D$ Blocked1";
+    write_csr_debug(mhpmevent14, TMA_EVT_RETIRE_WIDTH | EVT(7));  name[13] = "Fence Retired2";
+    write_csr_debug(mhpmevent15, TMA_EVT_RETIRE_WIDTH | EVT(2));  name[14] = "D$ Blocked0";
+    write_csr_debug(mhpmevent16, TMA_EVT_RETIRE_WIDTH | EVT(5));  name[15] = "D$ Blocked1";
     write_csr_debug(mhpmevent17, TMA_EVT_RETIRE_WIDTH | EVT(8));  name[16] = "D$ Blocked2";
-    write_csr_debug(mhpmevent18, TMA_EVT_COREWIDTH     | EVT(0));  name[17] = "Fetch Bubble0";
-    write_csr_debug(mhpmevent19, TMA_EVT_COREWIDTH     | EVT(1));  name[18] = "Fetch Bubble1";
-    write_csr_debug(mhpmevent20, TMA_EVT_COREWIDTH     | EVT(2));  name[19] = "Fetch Bubble2";
-    write_csr_debug(mhpmevent21, TMA_EVT_ISSUE_WDITH   | EVT(0));  name[20] = "Uops Issued0";
-    write_csr_debug(mhpmevent22, TMA_EVT_ISSUE_WDITH   | EVT(1));  name[21] = "Uops Issued1";
-    write_csr_debug(mhpmevent23, TMA_EVT_ISSUE_WDITH   | EVT(2));  name[22] = "Uops Issued2";
-    write_csr_debug(mhpmevent24, TMA_EVT_ISSUE_WDITH   | EVT(3));  name[23] = "Uops Issued3";
-    write_csr_debug(mhpmevent25, TMA_EVT_ISSUE_WDITH   | EVT(4));  name[24] = "Uops Issued4";
+    write_csr_debug(mhpmevent18, TMA_EVT_COREWIDTH    | EVT(0));  name[17] = "Fetch Bubble0";
+    write_csr_debug(mhpmevent19, TMA_EVT_COREWIDTH    | EVT(2));  name[18] = "Fetch Bubble1";
+    write_csr_debug(mhpmevent20, TMA_EVT_COREWIDTH    | EVT(4));  name[19] = "Fetch Bubble2";
+    write_csr_debug(mhpmevent21, TMA_EVT_ISSUE_WDITH  | EVT(0));  name[20] = "Uops Issued0";
+    write_csr_debug(mhpmevent22, TMA_EVT_ISSUE_WDITH  | EVT(1));  name[21] = "Uops Issued1";
+    write_csr_debug(mhpmevent23, TMA_EVT_ISSUE_WDITH  | EVT(2));  name[22] = "Uops Issued2";
+    write_csr_debug(mhpmevent24, TMA_EVT_ISSUE_WDITH  | EVT(3));  name[23] = "Uops Issued3";
+    write_csr_debug(mhpmevent25, TMA_EVT_ISSUE_WDITH  | EVT(4));  name[24] = "Uops Issued4";
 #else
 #error ("Unsupported Corewidth for scalar")
 #endif
