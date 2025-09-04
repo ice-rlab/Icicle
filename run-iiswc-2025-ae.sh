@@ -36,8 +36,9 @@ make branchmiss-bare-workload CORE=Rocket
 # ----------Run TMA microbenchmarks (Figure 7. (a), (b)) ----------
 mkdir -p $PC_DIR/iiswc-2025-ae-out/rocket/all
 
-make meta-run HW=rocket WORKLOAD=dhrystone-bare.json
-cp -r "$(last_exp)" $PC_DIR/iiswc-2025-ae-out/rocket/all
+# Takes a while and crashes in metasimulation
+# make meta-run HW=rocket WORKLOAD=dhrystone-bare.json
+# cp -r "$(last_exp)" $PC_DIR/iiswc-2025-ae-out/rocket/all
 
 
 make meta-run HW=rocket WORKLOAD=memcpy-bare.json
@@ -58,10 +59,10 @@ cp -r "$(last_exp)" $PC_DIR/iiswc-2025-ae-out/rocket/all
 make meta-run HW=rocket WORKLOAD=towers-bare.json
 cp -r "$(last_exp)" $PC_DIR/iiswc-2025-ae-out/rocket/all
 
-tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/rocket/all --ipc -o $PC_DIR/iiswc-2025-ae-out/rocket/all --ipc --w 3.5 --h 2.5 --lh 1.18
-tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/rocket/all --ipc -o $PC_DIR/iiswc-2025-ae-out/rocket/all --ipc --w 3.5 --h 2.5 --lh 1.18 --cat Backend
-tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/rocket/all --ipc -o $PC_DIR/iiswc-2025-ae-out/rocket/all --ipc --w 3.5 --h 2.5 --lh 1.18 --cat Frontend
-tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/rocket/all --ipc -o $PC_DIR/iiswc-2025-ae-out/rocket/all --ipc --w 3.5 --h 2.5 --lh 1.18 --cat BadSpeculation
+tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/rocket/all --ipc -o $PC_DIR/iiswc-2025-ae-out/rocket/all --w 3.5 --h 2.5 --lh 1.18
+tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/rocket/all -o $PC_DIR/iiswc-2025-ae-out/rocket/all --w 3.5 --h 2.5 --lh 1.18 --cat Backend
+tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/rocket/all -o $PC_DIR/iiswc-2025-ae-out/rocket/all --w 3.5 --h 2.5 --lh 1.18 --cat Frontend
+tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/rocket/all -o $PC_DIR/iiswc-2025-ae-out/rocket/all --w 3.5 --h 2.5 --lh 1.18 --cat BadSpeculation
 tma_tool --show-tma $PC_DIR/iiswc-2025-ae-out/rocket/all > $PC_DIR/iiswc-2025-ae-out/rocket/all/tma.txt
 
 
@@ -71,7 +72,7 @@ mkdir -p $PC_DIR/iiswc-2025-ae-out/rocket/case-study-2/
 make meta-run HW=rocket WORKLOAD=branchmiss-bare.json
 cp -r "$(last_exp)" $PC_DIR/iiswc-2025-ae-out/rocket/case-study-2
 
-tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/rocket/case-study-2/ --ipc -o $PC_DIR/iiswc-2025-ae-out/rocket/case-study-2/ --ipc --w 0.9 --h 2.5 --lh 1.18
+tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/rocket/case-study-2/ -o $PC_DIR/iiswc-2025-ae-out/rocket/case-study-2/ --ipc --w 0.9 --h 2.5 --lh 1.18
 tma_tool --show-tma $PC_DIR/iiswc-2025-ae-out/rocket/case-study-2 > $PC_DIR/iiswc-2025-ae-out/rocket/case-study-2/tma.txt
 
 
@@ -114,11 +115,12 @@ make towers-bare-workload CORE=Boom COREWIDTH=3 SCALAR=0
 make branchmiss-bare-workload CORE=Boom COREWIDTH=3 SCALAR=0
 
 
-mkdir -p $PC_DIR/iiswc-2025-ae-out/rocket
+mkdir -p $PC_DIR/iiswc-2025-ae-out/boom/
+mkdir -p $PC_DIR/iiswc-2025-ae-out/boom/all/
 
-
-make meta-run HW=large_boom_add_wires WORKLOAD=dhrystone-bare.json
-cp -r "$(last_exp)" $PC_DIR/iiswc-2025-ae-out/boom/all
+# Takes a while and crashes in metasimulation
+# make meta-run HW=large_boom_add_wires WORKLOAD=dhrystone-bare.json
+# cp -r "$(last_exp)" $PC_DIR/iiswc-2025-ae-out/boom/all
 
 make meta-run HW=large_boom_add_wires WORKLOAD=memcpy-bare.json
 cp -r "$(last_exp)" $PC_DIR/iiswc-2025-ae-out/boom/all
@@ -138,10 +140,10 @@ cp -r "$(last_exp)" $PC_DIR/iiswc-2025-ae-out/boom/all
 make meta-run HW=large_boom_add_wires WORKLOAD=towers-bare.json
 cp -r "$(last_exp)" $PC_DIR/iiswc-2025-ae-out/boom/all
 
-tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/boom/all --ipc -o $PC_DIR/iiswc-2025-ae-out/rocket/all --ipc --w 3.5 --h 2.5 --lh 1.18
-tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/boom/all --ipc -o $PC_DIR/iiswc-2025-ae-out/rocket/all --ipc --w 3.5 --h 2.5 --lh 1.18 --cat Backend
-tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/boom/all --ipc -o $PC_DIR/iiswc-2025-ae-out/rocket/all --ipc --w 3.5 --h 2.5 --lh 1.18 --cat Frontend
-tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/boom/all --ipc -o $PC_DIR/iiswc-2025-ae-out/rocket/all --ipc --w 3.5 --h 2.5 --lh 1.18 --cat BadSpeculation
+tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/boom/all --ipc -o $PC_DIR/iiswc-2025-ae-out/rocket/all --w 3.5 --h 2.5 --lh 1.18
+tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/boom/all -o $PC_DIR/iiswc-2025-ae-out/rocket/all --w 3.5 --h 2.5 --lh 1.18 --cat Backend
+tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/boom/all -o $PC_DIR/iiswc-2025-ae-out/rocket/all --w 3.5 --h 2.5 --lh 1.18 --cat Frontend
+tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/boom/all -o $PC_DIR/iiswc-2025-ae-out/rocket/all --w 3.5 --h 2.5 --lh 1.18 --cat BadSpeculation
 tma_tool --show-tma $PC_DIR/iiswc-2025-ae-out/rocket/all > $PC_DIR/iiswc-2025-ae-out/rocket/all/tma.txt
 
 
@@ -153,7 +155,7 @@ mkdir -p $PC_DIR/iiswc-2025-ae-out/boom/case-study-2/
 make meta-run HW=large_boom_add_wires WORKLOAD=branchmiss-bare.json
 cp -r "$(last_exp)" $PC_DIR/iiswc-2025-ae-out/boom/case-study-2
 
-tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/boom/case-study-2/ --ipc -o $PC_DIR/iiswc-2025-ae-out/boom/case-study-2/ --ipc --w 0.9 --h 2.5 --lh 1.18
+tma_tool --plot-tma $PC_DIR/iiswc-2025-ae-out/boom/case-study-2/ --ipc -o $PC_DIR/iiswc-2025-ae-out/boom/case-study-2/ --w 0.9 --h 2.5 --lh 1.18
 tma_tool --show-tma $PC_DIR/iiswc-2025-ae-out/boom/case-study-2 > $PC_DIR/iiswc-2025-ae-out/boom/case-study-2/tma.txt
 
 
@@ -164,7 +166,7 @@ tma_tool --show-tma $PC_DIR/iiswc-2025-ae-out/boom/case-study-2 > $PC_DIR/iiswc-
 
 # Running SPEC CPU2017 (only possible with FPGA and each simulation takes aroun 12-20 hours on VCU118)
 
-#Make sure to have SPEC_DIR set to local install for speckle.
+# Make sure to have SPEC_DIR set to local install for speckle.
 
 # make spec-workload JSON=spec17-intrate-ref-500 CORE=Boom COREWIDTH=3 SCALAR=1
 # make run HW=large_boom_scalar WORKLOAD=spec17-intrate-ref-500.json 
